@@ -1,0 +1,9 @@
+{
+  "name": "biblioteca-api",
+  "version": "1.0.0",
+  "description": "API da biblioteca — projeto base para a prova de GitHub Actions",
+  "main": "src/app.js",
+  "scripts": {
+    "start": "node src/app.js"
+  }
+}
