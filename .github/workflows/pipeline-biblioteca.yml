@@ -1,4 +1,4 @@
-name: CI/CD Pipeline
+name: Pipeline Biblioteca API
 
 on:
   push:
@@ -9,6 +9,8 @@ on:
 jobs:
   test:
     name: test
+    uses: ./.github/workflows/pipeline-biblioteca.yml
+
 
   unit-tests:
     name: unit-tests
