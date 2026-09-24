@@ -7,12 +7,6 @@ on:
     branches: [main]
 
 jobs:
-  test:
-    name: test
-    uses: on.workflow_call
-      version: 10
-
-
   unit-tests:
     name: unit-tests
     runs-on: ubuntu-latest
@@ -83,4 +77,6 @@ jobs:
         with:
           context: .
           push: true
-          tags: ${{ secrets.DOCKERHUB_USERNAME }}/biblioteca-api:latest github.sha
+          tags: |
+            ${{ secrets.DOCKERHUB_USERNAME }}/biblioteca-api:latest
+            ${{ secrets.DOCKERHUB_USERNAME }}/biblioteca-api:${{ github.sha }}
