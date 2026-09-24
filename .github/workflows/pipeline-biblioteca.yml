@@ -81,4 +81,3 @@ jobs:
           context: .
           push: true
           tags: ${{ secrets.DOCKERHUB_USERNAME }}/biblioteca-api:latest 
-          tags: github.sha 
