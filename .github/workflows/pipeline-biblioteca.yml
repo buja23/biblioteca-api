@@ -9,7 +9,7 @@ on:
 jobs:
   test:
     name: test
-    uses: ./.github/workflows/pipeline-biblioteca.yml
+    uses: on.workflow_call
 
 
   unit-tests:
