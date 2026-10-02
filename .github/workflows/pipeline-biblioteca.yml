@@ -21,8 +21,8 @@ jobs:
         env:
           SENHA: ${{ secrets.POSTGRES_PASSWORD_CI }}
         run: |
-          test -n "$SENHA" || { echo "Configure o secret POSTGRES_PASSWORD_CI."; exit 1; }
           cp .env.example .env
+          test -n "$SENHA" || { echo "Configure o secret POSTGRES_PASSWORD_CI."; exit 1; }
           python3 - <<'PY'
           import os
           from pathlib import Path
