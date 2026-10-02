@@ -1,0 +1,146 @@
+LISTA DE RECOMPOSIÇÃO — GITHUB ACTIONS COM DOCKER
+Aluno(a): ____________________  Turma: ____________________
+Professor(a): ________________  Entrega: ____/____/________
+
+EXERCÍCIO 1 — GATILHOS
+
+(a)
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+(b)
+on:
+  push:
+    branches: [main, develop]
+
+(c)
+on:
+  push:
+    tags: ['v*']
+  workflow_dispatch:
+
+Pergunta: os padrões main e '**' são inclusões alternativas. '**' aceita
+qualquer branch, inclusive branches com '/' no nome. Portanto o workflow
+roda em push em todas as branches. Isso pode executar testes/builds sem
+necessidade, consumir minutos de Actions e publicar imagens indevidamente
+se o job de publicação não tiver sua própria condição. Para limitar à
+main, remova '**'. Sem filtro de tags, esses filtros de branches não
+disparam o workflow em push de tags.
+
+EXERCÍCIO 2 — INDENTAÇÃO E LÓGICA
+
+Numeração: contando name: CI Quebrado como linha 1 e mantendo as linhas
+em branco do trecho do enunciado:
+1. Linha 15, run: docker compose up -d --build: está fora do step.
+   Deve ficar alinhado com name, como atributo do mesmo item.
+2. Linha 21, build: (e seu bloco): está dentro do último step de test.
+   Deve ficar com dois espaços, alinhado com test, diretamente sob jobs.
+3. Linha 26, - name: Build (e run da linha 27): está fora da lista steps
+   do job build. O item deve ficar alinhado com o item de checkout;
+   run deve ficar dois espaços mais à direita que o hífen.
+
+Erro de lógica: falta criar .env. O Compose usa env_file: .env nos dois
+serviços e esse arquivo não está versionado. Copie .env.example antes
+de executar docker compose.
+
+Arquivo corrigido: .github/workflows/exercicio-02.yml.
+O exercício 2 somente sobe e derruba o ambiente antes do build; as
+verificações detalhadas são feitas nos exercícios seguintes.
+
+EXERCÍCIO 3 — LEITURA DO REPOSITÓRIO
+
+Parte A:
+1. Serviço da API: app. Serviço do banco: banco.
+2. URL: http://localhost:8080/status.
+3. Conteúdo esperado: "estado":"ativo". O workflow verifica o campo JSON
+   com jq, aceitando também respostas com espaços entre as chaves.
+4. Comando executado a partir do runner:
+   docker compose exec -T banco sh -c 'pg_isready -U "$POSTGRES_USER" -d "$POSTGRES_DB"'
+   O sh dentro do container expande as variáveis do próprio banco.
+5. context: ./backend, pois build: ./backend identifica a pasta usada
+   como contexto e onde se espera o Dockerfile da Loja API.
+
+Parte B: exercicios/exercicio-03-loja-api.yml.
+É um modelo para o repositório hipotético Loja API. Copie-o para
+.github/workflows/ nesse projeto, com o Compose e .env.example da Loja.
+Não executá-lo na biblioteca-api: aqui os serviços são api/db, a porta
+é 3000, a rota é /health e o Dockerfile fica na raiz.
+
+EXERCÍCIO 4 — UM STEP, UMA RESPONSABILIDADE
+
+Arquivo: .github/workflows/exercicio-04.yml.
+Checkout, criação do .env, subida, espera, status HTTP, corpo JSON, rota
+404 e limpeza estão em steps separados. A espera termina com exit 1 se
+as 30 tentativas forem esgotadas. A limpeza tem if: always().
+
+Teste negativo sugerido: em uma branch de teste, substitua no jq
+.status == "ok" por .status == "erro". Execute o workflow e capture
+o step vermelho; depois restaure o arquivo.
+Pendência de entrega: execução real e print da aba Actions com os steps.
+
+EXERCÍCIO 5 — NEEDS E IF
+
+Parte A: .github/workflows/exercicio-05.yml.
+
+Parte B:
+1. needs: [validate] sem um job validate torna o workflow inválido.
+   O GitHub rejeita a dependência; os jobs não chegam a executar.
+2. Em pull request para main, se lint passar, rodam lint, test e notify.
+   build fica skipped, pois exige push na main.
+3. Se lint falhar, test fica skipped pela dependência; build também
+   fica skipped. notify roda por causa de if: always() e imprime
+   "Resultado do test: skipped".
+
+EXERCÍCIO 6 — PUBLICAÇÃO E SECRETS
+
+Parte A — cinco problemas:
+1. needs: [validate, unit-tests] referencia jobs inexistentes. Neste
+   workflow só existem test e docker-build. Use needs: test.
+2. POSTGRES_PASSWORD está escrita no YAML. Isso expõe a senha no
+   histórico; ela deve vir de um secret. Além disso, definir env no
+   job docker-build não troca a senha do arquivo .env usado em test.
+3. Falta restringir docker-build a push na main. Sem if, ele pode
+   tentar publicar em pull requests ou outros eventos configurados.
+4. context: ./backend não existe na biblioteca-api. Use context: .
+   porque o Dockerfile está na raiz.
+5. A tag lates está errada. Use latest e acrescente uma segunda tag
+   com o SHA completo do commit.
+
+Partes B e C: .github/workflows/exercicio-06.yml.
+O job test cria .env a partir do exemplo e substitui a senha pelo
+secret POSTGRES_PASSWORD_CI passado por env no step.
+O job docker-build depende de test, roda apenas em push na main,
+faz login com DOCKERHUB_USERNAME/DOCKERHUB_TOKEN e publica latest
+e ${{ github.sha }}. Nenhuma credencial literal aparece no YAML.
+Pendência de entrega: execução real e print das duas tags no Docker Hub.
+
+EXERCÍCIO 7 — DESAFIO INTEGRADOR
+
+Arquivo: .github/workflows/pipeline-biblioteca.yml.
+Dois jobs: test e build. Push na main, PR para main e execução manual.
+test cria .env com secret, valida Compose, sobe ambiente, aguarda API,
+verifica /health, /livros (HTTP 200 e array não vazio) e /nao-existe
+(404). Em falha, coleta logs e os publica como artifact. Sempre tenta
+derrubar o ambiente. build depende de test e publica latest e SHA
+apenas em push na main.
+
+Pendências de entrega:
+(1) Print de push na main com test e build verdes.
+(2) Print de PR para main com test verde e build skipped.
+(3) Print de falha proposital com artifact de logs disponível.
+Veja exercicios/ENTREGA.md para obter essas evidências.
+
+OBSERVAÇÕES DO REPOSITÓRIO
+Não há package-lock.json nem script test; não usar npm ci/npm test.
+Não há serviço web nem rota /items; usar api, db, /health e /livros.
+Os workflows anteriores foram substituídos pelas soluções da lista.
+A rota / também retorna 200 no código atual. Por isso o teste de rota
+inexistente usa explicitamente /nao-existe, como pede o enunciado.
+
+REFERÊNCIAS
+https://docs.github.com/en/actions/reference/workflows-and-actions/workflow-syntax
+https://docs.github.com/en/actions/tutorials/publish-packages/publish-docker-images
+https://github.com/docker/build-push-action
