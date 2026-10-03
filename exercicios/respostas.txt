@@ -79,7 +79,7 @@ as 30 tentativas forem esgotadas. A limpeza tem if: always().
 Teste negativo sugerido: em uma branch de teste, substitua no jq
 .status == "ok" por .status == "erro". Execute o workflow e capture
 o step vermelho; depois restaure o arquivo.
-Pendência de entrega: execução real e print da aba Actions com os steps.
+Execução aprovada e print salvo em exercicios/evidencias/04-steps.png.
 
 EXERCÍCIO 5 — NEEDS E IF
 
@@ -115,7 +115,7 @@ secret POSTGRES_PASSWORD_CI passado por env no step.
 O job docker-build depende de test, roda apenas em push na main,
 faz login com DOCKERHUB_USERNAME/DOCKERHUB_TOKEN e publica latest
 e ${{ github.sha }}. Nenhuma credencial literal aparece no YAML.
-Pendência de entrega: execução real e print das duas tags no Docker Hub.
+Execução aprovada e print das tags em exercicios/evidencias/06-dockerhub-tags.png.
 
 EXERCÍCIO 7 — DESAFIO INTEGRADOR
 
@@ -127,11 +127,12 @@ verifica /health, /livros (HTTP 200 e array não vazio) e /nao-existe
 derrubar o ambiente. build depende de test e publica latest e SHA
 apenas em push na main.
 
-Pendências de entrega:
-(1) Print de push na main com test e build verdes.
-(2) Print de PR para main com test verde e build skipped.
-(3) Print de falha proposital com artifact de logs disponível.
-Veja exercicios/ENTREGA.md para obter essas evidências.
+Evidências concluídas em exercicios/evidencias/:
+(1) 07-push-main-verde.png: push na main com test e build verdes.
+(2) 07-pr-build-skipped.png: PR para main com test verde e build skipped.
+(3) 07-falha-artifact.png: falha proposital e artifact de logs disponível.
+O artifact foi baixado e o PR de demonstração encerrado sem integrar o erro.
+Veja exercicios/VALIDACAO.md para os links das execuções.
 
 OBSERVAÇÕES DO REPOSITÓRIO
 Não há package-lock.json nem script test; não usar npm ci/npm test.

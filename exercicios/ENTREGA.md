@@ -62,8 +62,9 @@ exercícios, use uma branch no próprio repositório.
 - [x] Limpeza usa `if: always()`.
 - [x] Credenciais de publicação e senha dos exercícios 6/7 vêm de secrets.
 - [x] Tags `latest` e SHA, com `context: .`.
-- [ ] Secrets configurados no GitHub.
-- [ ] Workflows executados na aba Actions.
-- [ ] Prints exigidos anexados à entrega.
+- [x] Secrets configurados no GitHub.
+- [x] Workflows da biblioteca-api executados na aba Actions.
+- [x] Prints exigidos anexados em [evidencias/README.md](evidencias/README.md).
 
-Os prints só devem ser marcados como concluídos após as execuções reais.
+Execuções e evidências conferidas em [VALIDACAO.md](VALIDACAO.md).
+O exercício 3 permanece como modelo para o projeto hipotético Loja API.
