@@ -1,0 +1,56 @@
+name: Exercício 4 - Um step, uma responsabilidade
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout do código
+        uses: actions/checkout@v4
+
+      - name: Criar o .env a partir do .env.example
+        run: cp .env.example .env
+
+      - name: Subir o ambiente
+        run: docker compose up -d --build
+
+      - name: Aguardar a API (30 tentativas de 2 segundos)
+        run: |
+          for tentativa in $(seq 1 30); do
+            if curl --fail --silent --max-time 2 http://localhost:3000/health > /dev/null; then
+              exit 0
+            fi
+            if [ "$tentativa" -lt 30 ]; then
+              sleep 2
+            fi
+          done
+          echo "A API não ficou disponível após 30 tentativas."
+          exit 1
+
+      - name: Health check - status HTTP 200
+        run: |
+          status=$(curl --silent --show-error --max-time 5 --output /dev/null --write-out '%{http_code}' http://localhost:3000/health)
+          test "$status" = "200"
+
+      - name: Health check - corpo com status ok e banco conectado
+        run: |
+          curl --fail --silent --show-error --max-time 5 http://localhost:3000/health \
+            | jq -e '.status == "ok" and .db == "connected"'
+
+      - name: Rota inexistente - HTTP 404
+        run: |
+          status=$(curl --silent --show-error --max-time 5 --output /dev/null --write-out '%{http_code}' http://localhost:3000/nao-existe)
+          test "$status" = "404"
+
+      - name: Derrubar o ambiente sempre
+        if: always()
+        run: docker compose down -v

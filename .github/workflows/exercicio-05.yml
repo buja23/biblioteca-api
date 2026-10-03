@@ -1,0 +1,52 @@
+name: Exercício 5 - needs e if
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout do código
+        uses: actions/checkout@v4
+
+      - name: Criar o .env a partir do .env.example
+        run: cp .env.example .env
+
+      - name: Validar o Compose
+        run: docker compose config -q
+
+  test:
+    needs: lint
+    runs-on: ubuntu-latest
+    steps:
+      - name: Confirmar que lint passou
+        run: echo "lint passou; job test executado."
+
+  build:
+    needs: [lint, test]
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout do código
+        uses: actions/checkout@v4
+
+      - name: Construir a imagem
+        run: docker build -t biblioteca-api .
+
+  notify:
+    needs: test
+    if: always()
+    runs-on: ubuntu-latest
+    steps:
+      - name: Imprimir o resultado do test
+        env:
+          RESULTADO: ${{ needs.test.result }}
+        run: 'echo "Resultado do test: $RESULTADO"'
