@@ -141,7 +141,4 @@ Os workflows anteriores foram substituídos pelas soluções da lista.
 A rota / também retorna 200 no código atual. Por isso o teste de rota
 inexistente usa explicitamente /nao-existe, como pede o enunciado.
 
-REFERÊNCIAS
-https://docs.github.com/en/actions/reference/workflows-and-actions/workflow-syntax
-https://docs.github.com/en/actions/tutorials/publish-packages/publish-docker-images
-https://github.com/docker/build-push-action
+
